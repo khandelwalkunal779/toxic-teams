@@ -1,95 +1,28 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="96dp"
-    android:height="96dp"
-    android:viewportWidth="96"
-    android:viewportHeight="96">
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
 
-    <!-- Ambient Sensor Glow Halo -->
+    <!-- Mouse Body Outline -->
     <path
-        android:fillColor="#1A00D084"
-        android:pathData="M48,48m-38,0a38,38 0 1,1 76,0a38,38 0 1,1 -76,0" />
-
-    <!-- Kinetic Radar Wave Outer Left -->
-    <path
-        android:strokeColor="#4D00D084"
+        android:fillColor="#161C26"
+        android:strokeColor="#00D084"
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
-        android:pathData="M16,36 C10,44 10,52 16,60" />
-
-    <!-- Kinetic Radar Wave Outer Right -->
-    <path
-        android:strokeColor="#4D00D084"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:pathData="M80,36 C86,44 86,52 80,60" />
-
-    <!-- Kinetic Radar Wave Inner Left -->
-    <path
-        android:strokeColor="#00D084"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:pathData="M23,39 C19,45 19,51 23,57" />
-
-    <!-- Kinetic Radar Wave Inner Right -->
-    <path
-        android:strokeColor="#00D084"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:pathData="M73,39 C77,45 77,51 73,57" />
-
-    <!-- Mouse Body Outer Shell -->
-    <path
-        android:fillColor="#1E2533"
-        android:strokeColor="#00D084"
-        android:strokeWidth="3.5"
         android:strokeLineJoin="round"
-        android:pathData="M34,26 C34,14 62,14 62,26 L62,58 C62,72 34,72 34,58 Z" />
+        android:pathData="M16,21 C16,15 19.5,11 24,11 C28.5,11 32,15 32,21 L32,27 C32,33 28.5,37 24,37 C19.5,37 16,33 16,27 Z" />
 
-    <!-- Button Splitter Line -->
+    <!-- Button Divider Line -->
     <path
         android:strokeColor="#00D084"
         android:strokeWidth="2"
         android:strokeLineCap="round"
-        android:pathData="M48,15 L48,34" />
+        android:pathData="M24,11 L24,19" />
 
-    <!-- Scroll Wheel (Electric Lavender) -->
+    <!-- Optical Sensor / Teams Available Dot -->
     <path
-        android:fillColor="#7C4DFF"
-        android:strokeColor="#A78BFA"
-        android:strokeWidth="1.5"
-        android:pathData="M45,23 C45,21.5 51,21.5 51,23 L51,31 C51,32.5 45,32.5 45,31 Z" />
-
-    <!-- Optical Sensor Recess Ring -->
-    <path
-        android:fillColor="#0B0E14"
-        android:strokeColor="#303A4E"
-        android:strokeWidth="2"
-        android:pathData="M48,52m-11,0a11,11 0 1,1 22,0a11,11 0 1,1 -22,0" />
-
-    <!-- Laser/Optical Emitter Center Beam (Neon Green) -->
-    <path
-        android:fillColor="#00FF9D"
-        android:pathData="M48,52m-5,0a5,5 0 1,1 10,0a5,5 0 1,1 -10,0" />
-
-    <!-- Core Laser Spark -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M48,52m-2,0a2,2 0 1,1 4,0a2,2 0 1,1 -4,0" />
-
-    <!-- Sensor Crosshair Reticle -->
-    <path
-        android:strokeColor="#00D084"
-        android:strokeWidth="1.5"
-        android:strokeLineCap="round"
-        android:pathData="M48,39 L48,43 M48,61 L48,65 M35,52 L39,52 M57,52 L61,52" />
-
-    <!-- Kinetic Motion Speed Chevron (Bottom) -->
-    <path
-        android:strokeColor="#7C4DFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M42,78 L48,84 L54,78" />
+        android:fillColor="#00D084"
+        android:pathData="M24,25m-3.5,0a3.5,3.5 0 1,1 7,0a3.5,3.5 0 1,1 -7,0" />
 
 </vector>
-

@@ -57,15 +57,12 @@ class JigglerViewModel(
                     )
                 }
 
+                // Start continuous vibration for the entire active jiggle duration
+                hapticController.startContinuous(_uiState.value.vibrationIntensity)
+
                 for (remaining in activeDuration downTo 1) {
                     _uiState.update {
                         it.copy(secondsRemainingInPhase = remaining)
-                    }
-
-                    // Trigger micro-vibrations periodically during active phase (every 2 seconds or on start)
-                    val elapsed = activeDuration - remaining
-                    if (elapsed % 2 == 0) {
-                        hapticController.triggerPulse(_uiState.value.vibrationIntensity)
                     }
 
                     delay(1000L)
@@ -75,7 +72,7 @@ class JigglerViewModel(
                     }
                 }
 
-                // Stop haptics at the end of active phase
+                // Stop vibrations immediately when active phase finishes
                 hapticController.stop()
 
                 // Increment cycle counter
@@ -87,7 +84,7 @@ class JigglerViewModel(
                 }
 
                 // ==========================================
-                // 2. SLEEP / BATTERY SAVER PHASE
+                // 2. SLEEP / BATTERY SAVER PHASE (Vibrations OFF)
                 // ==========================================
                 val idleDuration = _uiState.value.idleDurationSeconds
                 _uiState.update {
@@ -140,10 +137,14 @@ class JigglerViewModel(
 
     fun setVibrationIntensity(intensity: VibrationIntensity) {
         _uiState.update { it.copy(vibrationIntensity = intensity) }
+        // If currently in active phase, update continuous vibration intensity immediately
+        if (_uiState.value.isRunning && _uiState.value.phase == JigglerPhase.ACTIVE) {
+            hapticController.startContinuous(intensity)
+        }
     }
 
     fun testVibration(intensity: VibrationIntensity) {
-        hapticController.triggerPulse(intensity)
+        hapticController.triggerTestPulse(intensity)
     }
 
     fun setMotionPattern(pattern: MotionPattern) {
@@ -166,4 +167,3 @@ class JigglerViewModel(
             }
     }
 }
-

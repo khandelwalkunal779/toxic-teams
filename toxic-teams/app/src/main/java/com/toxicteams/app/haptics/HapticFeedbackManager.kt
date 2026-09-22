@@ -11,22 +11,33 @@ import android.util.Log
 import com.toxicteams.app.data.VibrationIntensity
 
 /**
- * Controller interface for triggering haptic feedback.
+ * Controller interface for managing haptic vibrations.
  */
 interface HapticController {
-    fun triggerPulse(intensity: VibrationIntensity)
+    /**
+     * Start continuous vibration pattern for the active jiggle phase.
+     * Vibrates continuously until [stop] is invoked.
+     */
+    fun startContinuous(intensity: VibrationIntensity)
+
+    /**
+     * Stop all vibrations immediately (for sleep phase or when jiggler stops).
+     */
     fun stop()
+
+    /**
+     * Trigger a single test pulse for previewing intensity in settings.
+     */
+    fun triggerTestPulse(intensity: VibrationIntensity)
 }
 
 /**
- * Android implementation optimized for modern Google Pixel and all Android devices.
+ * Android implementation supporting continuous vibrations on Google Pixel and other Android devices.
  *
- * Notes on Pixel haptics:
- * 1. Using USAGE_ALARM in VibrationAttributes/AudioAttributes ensures vibration signals
- *    are NOT suppressed if the user has disabled "Touch feedback" in Pixel system settings.
- * 2. Predefined effects (like EFFECT_TICK) are often inaudible/unfelt on flat surfaces and
- *    strictly categorized as touch feedback. Direct waveform/oneshot pulses with explicit
- *    amplitudes deliver the physical mechanical impulse needed to perturb optical mouse sensors.
+ * Key design considerations for Google Pixel:
+ * 1. Uses USAGE_ALARM so that vibrations are not filtered out by Pixel's "Touch feedback" disable setting.
+ * 2. Uses repeating waveform effects (repeatIndex = 0) so the vibration is continuous throughout
+ *    the active phase, and instantly stops via cancel() when transitioning to sleep or stopping.
  */
 class AndroidHapticFeedbackManager(context: Context) : HapticController {
 
@@ -47,20 +58,24 @@ class AndroidHapticFeedbackManager(context: Context) : HapticController {
         }
     }
 
-    override fun triggerPulse(intensity: VibrationIntensity) {
-        if (intensity == VibrationIntensity.OFF) return
+    override fun startContinuous(intensity: VibrationIntensity) {
+        if (intensity == VibrationIntensity.OFF) {
+            stop()
+            return
+        }
         val currentVibrator = vibrator ?: return
 
         try {
             if (!currentVibrator.hasVibrator()) {
-                Log.d("HapticFeedback", "Device reports no vibrator hardware")
+                Log.d("HapticFeedback", "No vibrator hardware present")
                 return
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val effect = createPhysicalEffect(currentVibrator, intensity) ?: return
+                val hasAmplitude = currentVibrator.hasAmplitudeControl()
+                val effect = createContinuousEffect(intensity, hasAmplitude) ?: return
 
-                // 1. Modern API 33+ (Tiramisu, UpsideDownCake, VanillaIceCream, Pixel 7/8/9/10)
+                // 1. API 33+ (Android 13, 14, 15, 16, Google Pixel)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     try {
                         val vibrationAttributes = VibrationAttributes.Builder()
@@ -69,11 +84,11 @@ class AndroidHapticFeedbackManager(context: Context) : HapticController {
                         currentVibrator.vibrate(effect, vibrationAttributes)
                         return
                     } catch (e: Exception) {
-                        Log.w("HapticFeedback", "VibrationAttributes execution failed, attempting AudioAttributes", e)
+                        Log.w("HapticFeedback", "Vibrate with VibrationAttributes failed, trying AudioAttributes", e)
                     }
                 }
 
-                // 2. Android 8.0 to Android 12 fallback using AudioAttributes USAGE_ALARM
+                // 2. Android 8.0 - 12 fallback with AudioAttributes USAGE_ALARM
                 try {
                     val audioAttributes = AudioAttributes.Builder()
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -82,65 +97,26 @@ class AndroidHapticFeedbackManager(context: Context) : HapticController {
                     currentVibrator.vibrate(effect, audioAttributes)
                     return
                 } catch (e: Exception) {
-                    Log.w("HapticFeedback", "AudioAttributes execution failed, attempting simple vibrate", e)
+                    Log.w("HapticFeedback", "Vibrate with AudioAttributes failed, falling back", e)
                 }
 
-                // 3. Fallback to direct vibrate without attributes
+                // 3. Fallback without attributes
                 currentVibrator.vibrate(effect)
             } else {
-                // Legacy Android fallback
+                // Legacy Android (< API 26) continuous repeating pattern
                 @Suppress("DEPRECATION")
-                val durationMs = when (intensity) {
-                    VibrationIntensity.OFF -> 0L
-                    VibrationIntensity.GENTLE -> 45L
-                    VibrationIntensity.STANDARD -> 80L
+                val timings = when (intensity) {
+                    VibrationIntensity.OFF -> longArrayOf(0)
+                    VibrationIntensity.GENTLE -> longArrayOf(0, 150, 40)
+                    VibrationIntensity.STANDARD -> longArrayOf(0, 250, 40)
                 }
-                if (durationMs > 0) {
+                if (intensity != VibrationIntensity.OFF) {
                     @Suppress("DEPRECATION")
-                    currentVibrator.vibrate(durationMs)
+                    currentVibrator.vibrate(timings, 0)
                 }
             }
         } catch (e: Exception) {
-            Log.e("HapticFeedback", "Failed to trigger vibration pulse", e)
-        }
-    }
-
-    private fun createPhysicalEffect(vibrator: Vibrator, intensity: VibrationIntensity): VibrationEffect? {
-        if (intensity == VibrationIntensity.OFF) return null
-
-        val hasAmplitude = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.hasAmplitudeControl()
-        } else false
-
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            when (intensity) {
-                VibrationIntensity.OFF -> null
-                VibrationIntensity.GENTLE -> {
-                    // Crisp 45ms physical pulse
-                    if (hasAmplitude) {
-                        VibrationEffect.createOneShot(45L, 180)
-                    } else {
-                        VibrationEffect.createOneShot(45L, VibrationEffect.DEFAULT_AMPLITUDE)
-                    }
-                }
-                VibrationIntensity.STANDARD -> {
-                    // Energetic double-tap pulse (60ms on, 35ms off, 60ms on) to jolt optical mouse tracking
-                    if (hasAmplitude) {
-                        VibrationEffect.createWaveform(
-                            longArrayOf(0, 60, 35, 60),
-                            intArrayOf(0, 255, 0, 255),
-                            -1
-                        )
-                    } else {
-                        VibrationEffect.createWaveform(
-                            longArrayOf(0, 60, 35, 60),
-                            -1
-                        )
-                    }
-                }
-            }
-        } else {
-            null
+            Log.e("HapticFeedback", "Failed to start continuous vibration", e)
         }
     }
 
@@ -151,23 +127,116 @@ class AndroidHapticFeedbackManager(context: Context) : HapticController {
             Log.w("HapticFeedback", "Failed to cancel vibration", e)
         }
     }
+
+    override fun triggerTestPulse(intensity: VibrationIntensity) {
+        if (intensity == VibrationIntensity.OFF) return
+        val currentVibrator = vibrator ?: return
+
+        try {
+            if (!currentVibrator.hasVibrator()) return
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val hasAmplitude = currentVibrator.hasAmplitudeControl()
+                val (durationMs, amplitude) = when (intensity) {
+                    VibrationIntensity.OFF -> Pair(0L, 0)
+                    VibrationIntensity.GENTLE -> Pair(250L, if (hasAmplitude) 150 else VibrationEffect.DEFAULT_AMPLITUDE)
+                    VibrationIntensity.STANDARD -> Pair(350L, if (hasAmplitude) 255 else VibrationEffect.DEFAULT_AMPLITUDE)
+                }
+                if (durationMs > 0) {
+                    val effect = VibrationEffect.createOneShot(durationMs, amplitude)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        val attrs = VibrationAttributes.Builder()
+                            .setUsage(VibrationAttributes.USAGE_ALARM)
+                            .build()
+                        currentVibrator.vibrate(effect, attrs)
+                    } else {
+                        val audioAttrs = AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .setUsage(AudioAttributes.USAGE_ALARM)
+                            .build()
+                        currentVibrator.vibrate(effect, audioAttrs)
+                    }
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                currentVibrator.vibrate(300L)
+            }
+        } catch (e: Exception) {
+            Log.e("HapticFeedback", "Failed to trigger test pulse", e)
+        }
+    }
+
+    private fun createContinuousEffect(
+        intensity: VibrationIntensity,
+        hasAmplitude: Boolean
+    ): VibrationEffect? {
+        if (intensity == VibrationIntensity.OFF) return null
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            when (intensity) {
+                VibrationIntensity.OFF -> null
+                VibrationIntensity.GENTLE -> {
+                    // Steady gentle repeating vibration (160ms on, 40ms off, repeating at index 0)
+                    if (hasAmplitude) {
+                        VibrationEffect.createWaveform(
+                            longArrayOf(0, 160, 40),
+                            intArrayOf(0, 150, 0),
+                            0 // Repeat indefinitely
+                        )
+                    } else {
+                        VibrationEffect.createWaveform(
+                            longArrayOf(0, 160, 40),
+                            0 // Repeat indefinitely
+                        )
+                    }
+                }
+                VibrationIntensity.STANDARD -> {
+                    // Robust continuous vibration (260ms on, 40ms off, repeating at index 0)
+                    if (hasAmplitude) {
+                        VibrationEffect.createWaveform(
+                            longArrayOf(0, 260, 40),
+                            intArrayOf(0, 255, 0),
+                            0 // Repeat indefinitely
+                        )
+                    } else {
+                        VibrationEffect.createWaveform(
+                            longArrayOf(0, 260, 40),
+                            0 // Repeat indefinitely
+                        )
+                    }
+                }
+            }
+        } else {
+            null
+        }
+    }
 }
 
 /**
- * Testable mock controller for unit tests and Compose previews.
+ * Mock controller for unit tests and Compose previews.
  */
 class NoOpHapticController : HapticController {
-    var lastTriggeredIntensity: VibrationIntensity? = null
-    var pulseCount = 0
+    var isContinuousRunning = false
+    var lastActiveIntensity: VibrationIntensity? = null
+    var testPulseCount = 0
 
-    override fun triggerPulse(intensity: VibrationIntensity) {
-        lastTriggeredIntensity = intensity
-        if (intensity != VibrationIntensity.OFF) {
-            pulseCount++
+    override fun startContinuous(intensity: VibrationIntensity) {
+        if (intensity == VibrationIntensity.OFF) {
+            isContinuousRunning = false
+            lastActiveIntensity = null
+        } else {
+            isContinuousRunning = true
+            lastActiveIntensity = intensity
         }
     }
 
     override fun stop() {
-        // No-op
+        isContinuousRunning = false
+    }
+
+    override fun triggerTestPulse(intensity: VibrationIntensity) {
+        if (intensity != VibrationIntensity.OFF) {
+            testPulseCount++
+        }
     }
 }

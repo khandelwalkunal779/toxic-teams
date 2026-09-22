@@ -49,10 +49,11 @@ class JigglerViewModelTest {
         assertEquals(MotionPattern.MOIRE_RINGS, state.motionPattern)
         assertEquals(0, state.currentCycleCount)
         assertEquals(0L, state.totalActiveSeconds)
+        assertFalse(hapticController.isContinuousRunning)
     }
 
     @Test
-    fun testStartJigglerTransitionsToActivePhase() = runTest(testDispatcher) {
+    fun testStartJigglerTransitionsToActivePhaseWithContinuousVibration() = runTest(testDispatcher) {
         viewModel.startJiggler()
         testDispatcher.scheduler.runCurrent()
 
@@ -61,17 +62,20 @@ class JigglerViewModelTest {
         assertEquals(JigglerPhase.ACTIVE, state.phase)
         assertEquals(8, state.secondsRemainingInPhase)
         assertEquals(0, state.currentCycleCount)
+
+        // Continuous vibration must be active during ACTIVE phase
+        assertTrue(hapticController.isContinuousRunning)
+        assertEquals(VibrationIntensity.STANDARD, hapticController.lastActiveIntensity)
     }
 
     @Test
-    fun testActiveCountdownAndHapticPulses() = runTest(testDispatcher) {
+    fun testActiveCountdownIncrementsActiveSeconds() = runTest(testDispatcher) {
         viewModel.setActiveDuration(6)
         viewModel.startJiggler()
         testDispatcher.scheduler.runCurrent()
 
         assertEquals(6, viewModel.uiState.value.secondsRemainingInPhase)
-        assertEquals(VibrationIntensity.STANDARD, hapticController.lastTriggeredIntensity)
-        assertTrue(hapticController.pulseCount >= 1)
+        assertTrue(hapticController.isContinuousRunning)
 
         // Advance 1 second
         advanceTimeBy(1000L)
@@ -79,23 +83,23 @@ class JigglerViewModelTest {
         assertEquals(5, viewModel.uiState.value.secondsRemainingInPhase)
         assertEquals(1L, viewModel.uiState.value.totalActiveSeconds)
 
-        // Advance 1 more second (elapsed = 2s, should trigger another pulse)
-        val countBefore = hapticController.pulseCount
-        advanceTimeBy(1000L)
+        // Advance 2 more seconds
+        advanceTimeBy(2000L)
         testDispatcher.scheduler.runCurrent()
-        assertEquals(4, viewModel.uiState.value.secondsRemainingInPhase)
-        assertEquals(2L, viewModel.uiState.value.totalActiveSeconds)
-        assertTrue(hapticController.pulseCount > countBefore)
+        assertEquals(3, viewModel.uiState.value.secondsRemainingInPhase)
+        assertEquals(3L, viewModel.uiState.value.totalActiveSeconds)
+        assertTrue(hapticController.isContinuousRunning)
     }
 
     @Test
-    fun testTransitionFromActiveToSleepPhase() = runTest(testDispatcher) {
+    fun testTransitionFromActiveToSleepPhaseStopsVibration() = runTest(testDispatcher) {
         viewModel.setActiveDuration(5)
         viewModel.setIdleDuration(30)
         viewModel.startJiggler()
         testDispatcher.scheduler.runCurrent()
 
         assertEquals(JigglerPhase.ACTIVE, viewModel.uiState.value.phase)
+        assertTrue(hapticController.isContinuousRunning)
 
         // Advance past the 5s active duration
         advanceTimeBy(5000L)
@@ -106,10 +110,13 @@ class JigglerViewModelTest {
         assertEquals(30, state.secondsRemainingInPhase)
         assertEquals(1, state.currentCycleCount)
         assertEquals(5L, state.totalActiveSeconds)
+
+        // Vibration must be completely stopped in SLEEP phase
+        assertFalse(hapticController.isContinuousRunning)
     }
 
     @Test
-    fun testTransitionFromSleepBackToActivePhase() = runTest(testDispatcher) {
+    fun testTransitionFromSleepBackToActivePhaseRestartsContinuousVibration() = runTest(testDispatcher) {
         viewModel.setActiveDuration(5)
         viewModel.setIdleDuration(20)
         viewModel.startJiggler()
@@ -124,13 +131,17 @@ class JigglerViewModelTest {
         assertEquals(5, state.secondsRemainingInPhase)
         assertEquals(1, state.currentCycleCount)
         assertEquals(5L, state.totalActiveSeconds)
+
+        // Continuous vibration restarts in ACTIVE phase
+        assertTrue(hapticController.isContinuousRunning)
     }
 
     @Test
-    fun testStopJigglerRestoresIdleState() = runTest(testDispatcher) {
+    fun testStopJigglerRestoresIdleStateAndCancelsVibration() = runTest(testDispatcher) {
         viewModel.startJiggler()
         testDispatcher.scheduler.runCurrent()
         assertTrue(viewModel.uiState.value.isRunning)
+        assertTrue(hapticController.isContinuousRunning)
 
         advanceTimeBy(2000L)
         testDispatcher.scheduler.runCurrent()
@@ -142,6 +153,9 @@ class JigglerViewModelTest {
         assertFalse(state.isRunning)
         assertEquals(JigglerPhase.IDLE, state.phase)
         assertEquals(0, state.secondsRemainingInPhase)
+
+        // Vibration must be stopped
+        assertFalse(hapticController.isContinuousRunning)
     }
 
     @Test
@@ -170,17 +184,14 @@ class JigglerViewModelTest {
 
     @Test
     fun testDirectVibrationTesting() {
-        assertEquals(0, hapticController.pulseCount)
+        assertEquals(0, hapticController.testPulseCount)
         viewModel.testVibration(VibrationIntensity.GENTLE)
-        assertEquals(1, hapticController.pulseCount)
-        assertEquals(VibrationIntensity.GENTLE, hapticController.lastTriggeredIntensity)
+        assertEquals(1, hapticController.testPulseCount)
 
         viewModel.testVibration(VibrationIntensity.STANDARD)
-        assertEquals(2, hapticController.pulseCount)
-        assertEquals(VibrationIntensity.STANDARD, hapticController.lastTriggeredIntensity)
+        assertEquals(2, hapticController.testPulseCount)
 
         viewModel.testVibration(VibrationIntensity.OFF)
-        assertEquals(2, hapticController.pulseCount)
+        assertEquals(2, hapticController.testPulseCount)
     }
 }
-
