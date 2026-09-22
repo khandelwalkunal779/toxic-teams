@@ -1,82 +1,87 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Ambient Sensor Glow Halo -->
+    <path
+        android:fillColor="#1A00D084"
+        android:pathData="M48,48m-38,0a38,38 0 1,1 76,0a38,38 0 1,1 -76,0" />
 
     <!-- Kinetic Radar Wave Outer Left -->
     <path
-        android:strokeColor="#6600D084"
+        android:strokeColor="#4D00D084"
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
-        android:pathData="M24,42 C18,50 18,58 24,66" />
+        android:pathData="M16,36 C10,44 10,52 16,60" />
 
     <!-- Kinetic Radar Wave Outer Right -->
     <path
-        android:strokeColor="#6600D084"
+        android:strokeColor="#4D00D084"
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
-        android:pathData="M84,42 C90,50 90,58 84,66" />
+        android:pathData="M80,36 C86,44 86,52 80,60" />
 
     <!-- Kinetic Radar Wave Inner Left -->
     <path
         android:strokeColor="#00D084"
         android:strokeWidth="3"
         android:strokeLineCap="round"
-        android:pathData="M31,45 C27,51 27,57 31,63" />
+        android:pathData="M23,39 C19,45 19,51 23,57" />
 
     <!-- Kinetic Radar Wave Inner Right -->
     <path
         android:strokeColor="#00D084"
         android:strokeWidth="3"
         android:strokeLineCap="round"
-        android:pathData="M77,45 C81,51 81,57 77,63" />
+        android:pathData="M73,39 C77,45 77,51 73,57" />
 
     <!-- Mouse Body Outer Shell -->
     <path
-        android:fillColor="#18202C"
+        android:fillColor="#1E2533"
         android:strokeColor="#00D084"
         android:strokeWidth="3.5"
         android:strokeLineJoin="round"
-        android:pathData="M41,32 C41,20 67,20 67,32 L67,64 C67,78 41,78 41,64 Z" />
+        android:pathData="M34,26 C34,14 62,14 62,26 L62,58 C62,72 34,72 34,58 Z" />
 
     <!-- Button Splitter Line -->
     <path
         android:strokeColor="#00D084"
         android:strokeWidth="2"
         android:strokeLineCap="round"
-        android:pathData="M54,21 L54,40" />
+        android:pathData="M48,15 L48,34" />
 
     <!-- Scroll Wheel (Electric Lavender) -->
     <path
         android:fillColor="#7C4DFF"
         android:strokeColor="#A78BFA"
         android:strokeWidth="1.5"
-        android:pathData="M51,29 C51,27.5 57,27.5 57,29 L57,37 C57,38.5 51,38.5 51,37 Z" />
+        android:pathData="M45,23 C45,21.5 51,21.5 51,23 L51,31 C51,32.5 45,32.5 45,31 Z" />
 
     <!-- Optical Sensor Recess Ring -->
     <path
         android:fillColor="#0B0E14"
         android:strokeColor="#303A4E"
         android:strokeWidth="2"
-        android:pathData="M54,58m-11,0a11,11 0 1,1 22,0a11,11 0 1,1 -22,0" />
+        android:pathData="M48,52m-11,0a11,11 0 1,1 22,0a11,11 0 1,1 -22,0" />
 
     <!-- Laser/Optical Emitter Center Beam (Neon Green) -->
     <path
         android:fillColor="#00FF9D"
-        android:pathData="M54,58m-5,0a5,5 0 1,1 10,0a5,5 0 1,1 -10,0" />
+        android:pathData="M48,52m-5,0a5,5 0 1,1 10,0a5,5 0 1,1 -10,0" />
 
     <!-- Core Laser Spark -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,58m-2,0a2,2 0 1,1 4,0a2,2 0 1,1 -4,0" />
+        android:pathData="M48,52m-2,0a2,2 0 1,1 4,0a2,2 0 1,1 -4,0" />
 
     <!-- Sensor Crosshair Reticle -->
     <path
         android:strokeColor="#00D084"
         android:strokeWidth="1.5"
         android:strokeLineCap="round"
-        android:pathData="M54,45 L54,49 M54,67 L54,71 M41,58 L45,58 M63,58 L67,58" />
+        android:pathData="M48,39 L48,43 M48,61 L48,65 M35,52 L39,52 M57,52 L61,52" />
 
     <!-- Kinetic Motion Speed Chevron (Bottom) -->
     <path
@@ -84,6 +89,7 @@
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M48,84 L54,90 L60,84" />
+        android:pathData="M42,78 L48,84 L54,78" />
 
 </vector>
+

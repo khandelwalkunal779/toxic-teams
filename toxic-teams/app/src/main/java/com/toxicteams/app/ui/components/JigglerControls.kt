@@ -2,6 +2,7 @@ package com.toxicteams.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,6 +63,7 @@ fun JigglerControls(
     onActiveDurationChange: (Int) -> Unit,
     onIdleDurationChange: (Int) -> Unit,
     onVibrationIntensityChange: (VibrationIntensity) -> Unit,
+    onTestVibration: (VibrationIntensity) -> Unit = {},
     onMotionPatternChange: (MotionPattern) -> Unit
 ) {
     Card(
@@ -129,20 +131,42 @@ fun JigglerControls(
 
             // 3. Vibration Intensity Selector
             Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Vibration,
-                    contentDescription = null,
-                    tint = CorporateGreen,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.vibration_intensity_label),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = TextHighEmphasis
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Vibration,
+                        contentDescription = null,
+                        tint = CorporateGreen,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.vibration_intensity_label),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextHighEmphasis
+                    )
+                }
+
+                if (vibrationIntensity != VibrationIntensity.OFF) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(CorporateGreen.copy(alpha = 0.15f))
+                            .border(1.dp, CorporateGreen.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                            .clickable { onTestVibration(vibrationIntensity) }
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = "TEST",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = CorporateGreen
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -161,7 +185,12 @@ fun JigglerControls(
 
                     FilterChip(
                         selected = selected,
-                        onClick = { onVibrationIntensityChange(intensity) },
+                        onClick = {
+                            onVibrationIntensityChange(intensity)
+                            if (intensity != VibrationIntensity.OFF) {
+                                onTestVibration(intensity)
+                            }
+                        },
                         label = {
                             Text(
                                 text = label,

@@ -167,5 +167,20 @@ class JigglerViewModelTest {
         viewModel.setMotionPattern(MotionPattern.RADAR_PULSE)
         assertEquals(MotionPattern.RADAR_PULSE, viewModel.uiState.value.motionPattern)
     }
+
+    @Test
+    fun testDirectVibrationTesting() {
+        assertEquals(0, hapticController.pulseCount)
+        viewModel.testVibration(VibrationIntensity.GENTLE)
+        assertEquals(1, hapticController.pulseCount)
+        assertEquals(VibrationIntensity.GENTLE, hapticController.lastTriggeredIntensity)
+
+        viewModel.testVibration(VibrationIntensity.STANDARD)
+        assertEquals(2, hapticController.pulseCount)
+        assertEquals(VibrationIntensity.STANDARD, hapticController.lastTriggeredIntensity)
+
+        viewModel.testVibration(VibrationIntensity.OFF)
+        assertEquals(2, hapticController.pulseCount)
+    }
 }
 

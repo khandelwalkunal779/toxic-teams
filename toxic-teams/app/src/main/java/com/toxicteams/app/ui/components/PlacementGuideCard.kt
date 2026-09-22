@@ -62,21 +62,11 @@ fun PlacementGuideCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(ElectricLavender.copy(alpha = 0.15f))
-                        .border(1.dp, ElectricLavender.copy(alpha = 0.4f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Mouse,
-                        contentDescription = null,
-                        tint = ElectricLavender,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(R.drawable.ic_toxic_teams_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp)
+                )
 
                 Spacer(modifier = Modifier.width(12.dp))
 

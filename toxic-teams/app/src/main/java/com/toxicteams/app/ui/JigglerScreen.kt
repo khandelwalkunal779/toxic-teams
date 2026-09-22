@@ -1,10 +1,17 @@
 package com.toxicteams.app.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +20,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,7 +32,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
@@ -44,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,7 +67,6 @@ import com.toxicteams.app.ui.components.StatusBadge
 import com.toxicteams.app.ui.theme.CharcoalBackground
 import com.toxicteams.app.ui.theme.CharcoalSurface
 import com.toxicteams.app.ui.theme.CorporateGreen
-import com.toxicteams.app.ui.theme.CorporateGreenDark
 import com.toxicteams.app.ui.theme.CorporateGreenGlow
 import com.toxicteams.app.ui.theme.ElectricLavender
 import com.toxicteams.app.ui.theme.ErrorRed
@@ -69,9 +77,157 @@ import com.toxicteams.app.ui.theme.TextLowEmphasis
 import com.toxicteams.app.ui.theme.TextMediumEmphasis
 import com.toxicteams.app.viewmodel.JigglerViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JigglerScreen(
+    viewModel: JigglerViewModel,
+    uiState: JigglerUiState
+) {
+    AnimatedContent(
+        targetState = uiState.isRunning,
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        label = "JigglerScreenTransition"
+    ) { isRunning ->
+        if (isRunning) {
+            // ========================================================
+            // FULL-SCREEN RUNNING MODE:
+            // High-contrast patterns cover the entire display!
+            // Mouse can be rested anywhere on the glass surface.
+            // ========================================================
+            FullScreenJigglerMode(
+                viewModel = viewModel,
+                uiState = uiState
+            )
+        } else {
+            // ========================================================
+            // DASHBOARD CONFIGURATION MODE:
+            // Preview target, settings, guide, and Start Hero button.
+            // ========================================================
+            DashboardMode(
+                viewModel = viewModel,
+                uiState = uiState
+            )
+        }
+    }
+}
+
+/**
+ * Fullscreen execution mode: The chosen optical motion pattern fills the entire screen.
+ */
+@Composable
+private fun FullScreenJigglerMode(
+    viewModel: JigglerViewModel,
+    uiState: JigglerUiState
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        // Full screen optical canvas
+        OpticalMotionCanvas(
+            modifier = Modifier.fillMaxSize(),
+            phase = uiState.phase,
+            pattern = uiState.motionPattern,
+            secondsRemaining = uiState.secondsRemainingInPhase,
+            totalIdleDuration = uiState.idleDurationSeconds,
+            isFullScreen = true
+        )
+
+        // Top Status HUD Overlay
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                .clip(RoundedCornerShape(32.dp))
+                .background(Color.Black.copy(alpha = 0.85f))
+                .border(
+                    width = 1.5.dp,
+                    color = if (uiState.phase == JigglerPhase.ACTIVE) CorporateGreen else ElectricLavender,
+                    shape = RoundedCornerShape(32.dp)
+                )
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_toxic_teams_logo),
+                contentDescription = null,
+                modifier = Modifier.size(28.dp)
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column {
+                Text(
+                    text = if (uiState.phase == JigglerPhase.ACTIVE) {
+                        "ACTIVE • REST MOUSE ANYWHERE"
+                    } else {
+                        "STEALTH BATTERY SAVER"
+                    },
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Black),
+                    color = if (uiState.phase == JigglerPhase.ACTIVE) CorporateGreenGlow else ElectricLavender
+                )
+                Text(
+                    text = if (uiState.phase == JigglerPhase.ACTIVE) {
+                        "Cycle #${uiState.currentCycleCount + 1} • ${uiState.secondsRemainingInPhase}s remaining (100% Brightness)"
+                    } else {
+                        "Next active cycle in ${uiState.secondsRemainingInPhase}s (1% Brightness)"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextHighEmphasis
+                )
+            }
+        }
+
+        // Bottom Prominent Stop Button
+        Button(
+            onClick = { viewModel.stopJiggler() },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 24.dp)
+                .fillMaxWidth()
+                .height(64.dp)
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(22.dp),
+                    spotColor = ErrorRed
+                ),
+            shape = RoundedCornerShape(22.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = ErrorRed,
+                contentColor = Color.White
+            )
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Stop,
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = stringResource(R.string.action_stop).uppercase(),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        fontSize = 18.sp,
+                        letterSpacing = 1.2.sp
+                    )
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Standard Dashboard Configuration Screen.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DashboardMode(
     viewModel: JigglerViewModel,
     uiState: JigglerUiState
 ) {
@@ -86,21 +242,12 @@ fun JigglerScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(CorporateGreen.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Shield,
-                                contentDescription = null,
-                                tint = CorporateGreen,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Image(
+                            painter = painterResource(R.drawable.ic_toxic_teams_logo),
+                            contentDescription = "Toxic Teams Logo",
+                            modifier = Modifier.size(34.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleLarge.copy(
@@ -131,53 +278,36 @@ fun JigglerScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Optical Motion Active Target Canvas
+            // Optical Motion Target Preview Canvas
             OpticalMotionCanvas(
                 phase = uiState.phase,
                 pattern = uiState.motionPattern,
                 secondsRemaining = uiState.secondsRemainingInPhase,
-                totalIdleDuration = uiState.idleDurationSeconds
+                totalIdleDuration = uiState.idleDurationSeconds,
+                isFullScreen = false
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // Subtitle status prompt
+            // Subtitle prompt
             Text(
-                text = when (uiState.phase) {
-                    JigglerPhase.ACTIVE -> stringResource(R.string.target_zone_active_sub)
-                    JigglerPhase.SLEEP -> stringResource(
-                        R.string.target_zone_sleep_sub,
-                        uiState.secondsRemainingInPhase
-                    )
-                    JigglerPhase.IDLE -> stringResource(R.string.target_zone_idle_sub)
-                },
+                text = stringResource(R.string.target_zone_idle_sub),
                 style = MaterialTheme.typography.bodyMedium,
-                color = when (uiState.phase) {
-                    JigglerPhase.ACTIVE -> CorporateGreenGlow
-                    JigglerPhase.SLEEP -> ElectricLavender
-                    JigglerPhase.IDLE -> TextMediumEmphasis
-                },
+                color = TextMediumEmphasis,
                 fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
-            // Hero Action: Large Expressive Start/Stop Button
-            HeroActionButton(
-                isRunning = uiState.isRunning,
-                onToggle = {
-                    if (uiState.isRunning) {
-                        viewModel.stopJiggler()
-                    } else {
-                        viewModel.startJiggler()
-                    }
-                }
+            // Hero Start Action Button
+            HeroStartButton(
+                onStart = { viewModel.startJiggler() }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Session Stats Strip (Cycles & Active Runtime)
-            if (uiState.isRunning || uiState.currentCycleCount > 0) {
+            // Session Stats Strip
+            if (uiState.currentCycleCount > 0 || uiState.totalActiveSeconds > 0) {
                 SessionStatsStrip(
                     cycles = uiState.currentCycleCount,
                     totalActiveSeconds = uiState.totalActiveSeconds
@@ -194,6 +324,7 @@ fun JigglerScreen(
                 onActiveDurationChange = viewModel::setActiveDuration,
                 onIdleDurationChange = viewModel::setIdleDuration,
                 onVibrationIntensityChange = viewModel::setVibrationIntensity,
+                onTestVibration = { viewModel.testVibration(it) },
                 onMotionPatternChange = viewModel::setMotionPattern
             )
 
@@ -208,39 +339,26 @@ fun JigglerScreen(
 }
 
 /**
- * Large expressive Start/Stop Hero Button.
+ * Large expressive Start Hero Button.
  */
 @Composable
-private fun HeroActionButton(
-    isRunning: Boolean,
-    onToggle: () -> Unit
+private fun HeroStartButton(
+    onStart: () -> Unit
 ) {
-    val buttonBgColor by animateColorAsState(
-        targetValue = if (isRunning) ErrorRed else CorporateGreen,
-        label = "HeroButtonBgColor"
-    )
-
-    val buttonScale by animateFloatAsState(
-        targetValue = if (isRunning) 1.02f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "HeroButtonScale"
-    )
-
     Button(
-        onClick = onToggle,
+        onClick = onStart,
         modifier = Modifier
             .fillMaxWidth()
             .height(64.dp)
-            .scale(buttonScale)
             .shadow(
-                elevation = if (isRunning) 12.dp else 8.dp,
+                elevation = 12.dp,
                 shape = RoundedCornerShape(20.dp),
-                spotColor = if (isRunning) ErrorRed else CorporateGreenGlow
+                spotColor = CorporateGreenGlow
             ),
         shape = RoundedCornerShape(20.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = buttonBgColor,
-            contentColor = if (isRunning) Color.White else Color.Black
+            containerColor = CorporateGreen,
+            contentColor = Color.Black
         )
     ) {
         Row(
@@ -248,17 +366,13 @@ private fun HeroActionButton(
             horizontalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = if (isRunning) Icons.Default.Stop else Icons.Default.PlayArrow,
+                imageVector = Icons.Default.PlayArrow,
                 contentDescription = null,
                 modifier = Modifier.size(28.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = if (isRunning) {
-                    stringResource(R.string.action_stop).uppercase()
-                } else {
-                    stringResource(R.string.action_start).uppercase()
-                },
+                text = stringResource(R.string.action_start).uppercase(),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Black,
                     fontSize = 17.sp,
@@ -350,4 +464,3 @@ private fun SessionStatsStrip(
         }
     }
 }
-

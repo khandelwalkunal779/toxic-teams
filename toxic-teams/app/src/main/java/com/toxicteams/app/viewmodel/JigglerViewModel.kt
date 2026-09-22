@@ -142,6 +142,10 @@ class JigglerViewModel(
         _uiState.update { it.copy(vibrationIntensity = intensity) }
     }
 
+    fun testVibration(intensity: VibrationIntensity) {
+        hapticController.triggerPulse(intensity)
+    }
+
     fun setMotionPattern(pattern: MotionPattern) {
         _uiState.update { it.copy(motionPattern = pattern) }
     }
