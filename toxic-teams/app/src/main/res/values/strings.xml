@@ -1,0 +1,49 @@
+<resources>
+    <string name="app_name">Toxic Teams</string>
+    <string name="app_tagline">Optical Mouse Jiggler</string>
+
+    <!-- Statuses -->
+    <string name="status_idle">Standby</string>
+    <string name="status_active">Jiggling Active</string>
+    <string name="status_sleep">Stealth Standby</string>
+
+    <!-- Controls -->
+    <string name="action_start">Start Jiggler</string>
+    <string name="action_stop">Stop Jiggler</string>
+    <string name="action_running">Jiggler Running</string>
+
+    <!-- Target Zone -->
+    <string name="target_zone_prompt">Place optical mouse sensor here</string>
+    <string name="target_zone_active_sub">High-contrast optical excitation active</string>
+    <string name="target_zone_sleep_sub">Battery saver mode • Next jiggle in %1$ds</string>
+    <string name="target_zone_idle_sub">Press Start to keep your status available</string>
+
+    <!-- Configuration -->
+    <string name="settings_header">Configuration</string>
+    <string name="active_duration_label">Active Duration</string>
+    <string name="active_duration_value">%1$d seconds</string>
+    <string name="idle_interval_label">Idle Interval</string>
+    <string name="idle_interval_value">%1$d seconds</string>
+    <string name="vibration_intensity_label">Vibration Intensity</string>
+    <string name="vibration_off">Off</string>
+    <string name="vibration_gentle">Gentle</string>
+    <string name="vibration_standard">Standard</string>
+
+    <!-- Motion Patterns -->
+    <string name="pattern_label">Motion Pattern</string>
+    <string name="pattern_moire">Rotating Moiré</string>
+    <string name="pattern_noise">High-Contrast Noise</string>
+    <string name="pattern_radar">Radar Pulse</string>
+
+    <!-- Statistics -->
+    <string name="stats_header">Session Stats</string>
+    <string name="stat_cycles">Cycles</string>
+    <string name="stat_active_time">Active Time</string>
+
+    <!-- Placement Guide -->
+    <string name="guide_title">How to Place Your Mouse</string>
+    <string name="guide_step_1">1. Rest your optical or laser mouse face-down over the active circle.</string>
+    <string name="guide_step_2">2. Center the optical sensor over the pulsating target crosshairs.</string>
+    <string name="guide_step_3">3. High-contrast kinetics + micro-vibrations keep your Teams status green.</string>
+    <string name="guide_note">Note: Screen brightness lowers automatically during sleep to conserve battery.</string>
+</resources>
