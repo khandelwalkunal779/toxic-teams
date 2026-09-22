@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Toxic Teams</string>
+    <string name="app_name">ToxicTeams</string>
     <string name="app_tagline">Optical Mouse Jiggler</string>
 
     <!-- Statuses -->
@@ -13,10 +13,10 @@
     <string name="action_running">Jiggler Running</string>
 
     <!-- Target Zone -->
-    <string name="target_zone_prompt">Place optical mouse sensor here</string>
+    <string name="target_zone_prompt">Rest optical mouse anywhere on screen</string>
     <string name="target_zone_active_sub">High-contrast optical excitation active</string>
     <string name="target_zone_sleep_sub">Battery saver mode • Next jiggle in %1$ds</string>
-    <string name="target_zone_idle_sub">Press Start to keep your status available</string>
+    <string name="target_zone_idle_sub">Press Start to launch full-screen optical excitation</string>
 
     <!-- Configuration -->
     <string name="settings_header">Configuration</string>
@@ -42,8 +42,12 @@
 
     <!-- Placement Guide -->
     <string name="guide_title">How to Place Your Mouse</string>
-    <string name="guide_step_1">1. Rest your optical or laser mouse face-down over the active circle.</string>
-    <string name="guide_step_2">2. Center the optical sensor over the pulsating target crosshairs.</string>
-    <string name="guide_step_3">3. High-contrast kinetics + micro-vibrations keep your Teams status green.</string>
-    <string name="guide_note">Note: Screen brightness lowers automatically during sleep to conserve battery.</string>
+    <string name="guide_step_1">1. Rest your optical or laser mouse face-down anywhere on your phone screen.</string>
+    <string name="guide_step_2">2. Full-screen high-contrast motion ensures sensor detection across the entire glass surface.</string>
+    <string name="guide_step_3">3. Continuous vibrations + display kinetics keep your status active and available.</string>
+    <string name="guide_note">Note: Screen brightness lowers automatically to 1% during sleep to conserve battery.</string>
+
+    <!-- Credits -->
+    <string name="credits_designed_by">Designed &amp; Developed by</string>
+    <string name="credits_author">😎 Kunal Khandelwal</string>
 </resources>

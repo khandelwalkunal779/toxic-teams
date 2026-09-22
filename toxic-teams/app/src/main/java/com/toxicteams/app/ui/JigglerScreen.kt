@@ -333,7 +333,35 @@ private fun DashboardMode(
             // How To Place Visual Guide Card
             PlacementGuideCard()
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // Author Credits
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(R.string.credits_designed_by),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        letterSpacing = 1.sp,
+                        fontSize = 11.sp
+                    ),
+                    color = TextLowEmphasis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.credits_author),
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    ),
+                    color = CorporateGreen
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

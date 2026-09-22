@@ -297,7 +297,7 @@ fun OpticalMotionCanvas(
                     modifier = Modifier.padding(24.dp)
                 ) {
                     Text(
-                        text = "OPTICAL TARGET",
+                        text = "FULL-SCREEN MOTION",
                         style = MaterialTheme.typography.labelMedium,
                         color = CorporateGreen,
                         fontWeight = FontWeight.Bold,

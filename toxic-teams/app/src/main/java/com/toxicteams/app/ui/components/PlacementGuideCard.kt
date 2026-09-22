@@ -77,7 +77,7 @@ fun PlacementGuideCard(
                         color = TextHighEmphasis
                     )
                     Text(
-                        text = "Physical hardware alignment",
+                        text = "Full-screen motion surface • Anywhere on glass",
                         style = MaterialTheme.typography.labelSmall,
                         color = TextMediumEmphasis
                     )
